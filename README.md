@@ -28,7 +28,7 @@ Other options include:
 
 * Virtual-disk size = 512 MB and it's created on /usr/ directory
 * Default filesystem used =  ext4
-* ##### Cipher options:
+* **Cipher options:**
   * LUKS1: aes-xts-plain64, Key: 256 bits, LUKS header hashing: sha1, RNG: /dev/urandom
   * plain: aes-cbc-essiv:sha256, Key: 256 bits, Password hashing: ripemd160
 * Mounting point = /media/luks_* where * is random-string.
@@ -45,8 +45,11 @@ Other options include:
 * man dmsetup
 
 The LUKS website at http://code.google.com/p/cryptsetup/
+
 The cryptsetup FAQ, contained in the distribution package and online at http://code.google.com/p/cryptsetup/wiki/FrequentlyAskedQuestions
+
 The cryptsetup mailing list and list archive, see FAQ entry 1.6.
+
 The LUKS on-disk format specification available at http://code.google.com/p/cryptsetup/wiki/Specification
 
 #### Edit the script to fit your use... Share!/Merge.. :blue_heart:
