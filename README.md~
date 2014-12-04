@@ -34,7 +34,7 @@ Other options include:
 * Mounting point = /media/luks_* where * is random-string.
 * Others.. 
 
-### Dependencies (Install)
+### Dependencies
 1. **dmsetup** ---  low level logical volume management
 2. **cryptsetup** --- manage plain dm-crypt and LUKS encrypted volumes
 
