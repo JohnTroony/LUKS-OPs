@@ -16,7 +16,6 @@ There is an option for a menu:
 ```
 Other options include:
 ```bash
-./luks-ops.sh menu
 ./luks-ops.sh new disk_Name Size_in_numbers
 ./luks-ops.sh mount /path/to/device (mountpoint) 
 ./luks-ops.sh unmount-all
@@ -29,18 +28,18 @@ Other options include:
 * Virtual-disk size = 512 MB and it's created on /usr/ directory
 * Default filesystem used =  ext4
 * **Cipher options:**
-  * LUKS1: aes-xts-plain64, Key: 256 bits, LUKS header hashing: sha1, RNG: /dev/urandom
-  * plain: aes-cbc-essiv:sha256, Key: 256 bits, Password hashing: ripemd160 (working on this :smile: )
+  * Creating LUKS1: aes-xts-plain64, Key: 256 bits, LUKS header hashing: sha1, RNG: /dev/urandom
+  * plain: aes-cbc-essiv:sha256, Key: 256 bits, Password hashing: ripemd160 (about-time :smile:)
 * Mounting point = /media/luks_* where * is random-string.
-* Others.. 
+* Others.. **NB.** You can change /dev/urandom to /dev/zero (speed?)
 
-### Dependencies (Install)
+### Dependencies (Install applications:)
 1. **dmsetup** ---  low level logical volume management
 2. **cryptsetup** --- manage plain dm-crypt and LUKS encrypted volumes
 
 **NB: Run as root.**
 
-#### But make sure you read the man pages and other onlie Doc about LUKS
+#### But make sure you read the man pages and other online Doc about LUKS
 * man cryptsetup (or cryptsetup --help)
 * man dmsetup
 
