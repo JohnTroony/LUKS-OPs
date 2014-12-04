@@ -63,7 +63,8 @@ exit 1;
 # Function to Setup a new virtual volume with LUKS
 function New_volume(){
 #Function Variables
-
+Mapper="/dev/mapper/$cyptDev"
+node="/media/$temp_name"
 
 # Get Size of the disk to create . If not 512 MB is used
 read -p "Enter size (MB) of virtual disk to create [default 512]  " size
@@ -73,7 +74,7 @@ done
 echo -e $green"$size MB is set as your default virtual disk capcity.\n"$normal
 
 # Get Disk Name from user. If not, a random one is used.
-read -p "Enter name of virtual disk to create (default LUKS_random.disk)  " name
+read -p "Enter name of virtual disk to create (default LUKS_randomString)  " name
 while [[ -z "$name" ]]; do
 	name=$temp_name
 done
@@ -87,10 +88,14 @@ echo -e  $green"\nDone creating the block file $name in /usr/ directory\n"$norma
 # Create a block device from the file.
 
 losetup $loopDev /usr/$name 2>/tmp/$logs.log
-confirm_lo=$(losetup -a | grep /dev/loop0 | cut -d':' -f3 | grep \( | cut -d'(' -f2 | tr -dc a-zA-Z\/ | cut -d'/' -f3)
+confirm_lo=$(losetup -a | grep $loopDev | cut -d':' -f3 | grep \( | cut -d'(' -f2 | tr -dc a-zA-Z\/ | cut -d'/' -f3)
 match="luks"$logs
-echo "confirm LoopBack is $confirm_lo"
-echo "confirm Match is $match"
+
+# For Debugs Only
+#echo "confirm LoopBack is $confirm_lo"
+#echo "confirm Match is $match"
+
+# Test if losetup is fine before we continue execution
 if [[ $confirm_lo != $match ]]; then
 	rm /usr/$name
 	echo -e $red"There was a problem setting up LUKS.. Try '$0 new device-name device-size'\n"$none
@@ -129,16 +134,20 @@ case $full_spec in
 	;;
 esac
 
-### DEBUGS
-#confirm_crypt=$(dmsetup ls | cut -d$'\t' -f 1 | grep $cyptDev)
+cryptsetup luksOpen $loopDev $cyptDev
+
+confirm_crypt=$(dmsetup ls | cut -d$'\t' -f 1 | grep $cyptDev)
+#For debugs only
 #echo "CryptDevice = $cyptDev"
 #echo "Matching CyptDev = $confirm_cryp"
-#if [[ $confirm_crypt != $cyptDev ]]; then
-#	echo -e $red"There was a problem setting up LUKS.. check /tmp/$logs.log\n"$none
-#	exit 1;
-#fi
 
-cryptsetup luksOpen $loopDev $cyptDev
+if [[ $confirm_crypt != $cyptDev ]]; then
+	echo -e $red"There was a problem setting up LUKS.. check /tmp/$logs.log"$none
+	echo -e $red"If you entered lower-case yes use YES next time.\n"$none
+	exit 1;
+fi
+
+
 
 echo -e $green"\nList of dmsetup current on your system..."$normal
 dmsetup ls
@@ -149,8 +158,8 @@ echo -e $green"Select File system to use e.g 2 :\n"$normal
 echo -e $yellow"1. ext3   2. ext4   3. btrfs  4. bfs "$none
 echo -e $yellow"5. ntfs   6. vfat   7. Other"$none
 read option
-while [[ -z "$option " ]]; do
-	$option=2
+while [[ -z "$option" ]]; do
+	option=2
 done
 
 case $option in
@@ -170,12 +179,15 @@ case $option in
 	   mkfs.$fileSys /dev/mapper/$cyptDev
 	;;
 	*) echo -e $red"No match found! Your option is magical?\n"$none
+	Clean
 	exit 1;
 	;;
 esac
 
+# Print Stats/Details
+echo -e $yellow" Disk-Name:\t $name\n Path:\t\t /usr/$name\n Loop-Device:\t $loopDev\n Mapper:\t $Mapper\n Mount point:\t $node\n"$none
 #mount
-node="/media/$temp_name"
+
 mkdir $node
 mount /dev/mapper/$cyptDev $node
 chown -HR $SUDO_USER $node
@@ -345,6 +357,22 @@ case "$1" in
 	
 	loopDev=$(losetup -f)
 	losetup $loopDev /usr/$2
+	
+	confirm_lo=$(losetup -a | grep $loopDev | cut -d':' -f3 | grep \( | cut -d'(' -f2 | tr -dc a-zA-Z\/ | cut -d'/' -f3)
+	match=$2
+
+	# For Debugs
+	#echo "confirm Loop-device is $confirm_lo\n Confirm-Match is $match\n"
+	#echo "If Loop-device is not the same as Confirm-Match... ERROR"
+
+	# Test if losetup is fine before we continue execution
+	if [[ $confirm_lo != $match ]]; then
+		rm /usr/$2
+		echo -e $red"There was a problem setting up LUKS.. Try '$0 new device-name device-size'\n"$none
+		Clean
+		exit 1;
+	fi
+	
 	cryptsetup luksFormat -c aes-cbc-essiv:sha256 $loopDev
 	echo 
 	
@@ -352,13 +380,24 @@ case "$1" in
 	cryptsetup luksOpen $loopDev $cyptDev
 	echo
 	
+	confirm_crypt=$(dmsetup ls | cut -d$'\t' -f 1 | grep $cyptDev)
+	
+	#For debugs
+	#echo "CryptDevice = $cyptDev\n Matching-CyptDev = $confirm_cryp"
+	#echo "If CryptDevice is not equal to Matching-CyptDev.. ERROR!"
+
+	if [[ $confirm_crypt != $cyptDev ]]; then
+		echo -e $red"There was a problem setting up LUKS.. Check if is /tmp/$logs.log has anything."$none
+		echo -e $yellow"Password didn't Match or If you entered lower-case yes use YES next time.\n"$none
+		exit 1;
+	fi
+	
 	echo -e $yellow"Creating filesystem......"$none
 	mkfs.ext4 -L $2 /dev/mapper/$cyptDev
 	echo
 	fi
-	echo -e $green"DONE!!!\n"$normal
-	echo -e $yellow"Virtual-Disk:\t /usr/$2\n Loop-Device:\t $loopDev\n Mapper:\t /dev/mapper/$cyptDev\n"$none
-	
+	echo -e $green"MOUNT (yes/no)\n"$normal
+		
 	read -p "LUKS Virtual disk created, mount it? yes/no :" mount_new
 	if [ $mount_new == "yes" ]; then
 		mkdir  /media/$temp_name
@@ -367,8 +406,9 @@ case "$1" in
 		echo -e $green"You can delete '/media/$temp_name' after use.\n"$normal
 	else
 		echo -e $red"Closing..."$none
-		exit 1;
 	fi
+	echo -e $yellow" Disk-Name:\t $2\n Path:\t\t /usr/$2\n Loop-Device:\t $loopDev\n Mapper:\t /dev/mapper/$cyptDev\n"$none
+	exit 1;
 	;;
 	mount) # Mounting a LUKS volume
 	if [ $# -lt 2 ]; then
