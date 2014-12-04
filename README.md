@@ -12,7 +12,7 @@ Like:
 
 There is an option for a menu:
 ```bash
-./luks-ops.sh menu or ./luks-ops.sh
+./luks-ops.sh menu or simply ./luks-ops.sh
 ```
 Other options include:
 ```bash
@@ -30,13 +30,13 @@ Other options include:
 * Default filesystem used =  ext4
 * **Cipher options:**
   * LUKS1: aes-xts-plain64, Key: 256 bits, LUKS header hashing: sha1, RNG: /dev/urandom
-  * plain: aes-cbc-essiv:sha256, Key: 256 bits, Password hashing: ripemd160
+  * plain: aes-cbc-essiv:sha256, Key: 256 bits, Password hashing: ripemd160 (working on this :smile: )
 * Mounting point = /media/luks_* where * is random-string.
 * Others.. 
 
 ### Dependencies
-1. dmsetup ---  dmsetup - low level logical volume management
-2. cryptsetup --- cryptsetup - manage plain dm-crypt and LUKS encrypted volumes
+1. **dmsetup** ---  low level logical volume management
+2. **cryptsetup** --- manage plain dm-crypt and LUKS encrypted volumes
 
 **NB: Run as root.**
 

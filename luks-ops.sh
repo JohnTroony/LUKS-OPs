@@ -3,7 +3,8 @@
 # Bash script for quickly managing LUKS volumes:
 # You can create a virtual volume from a file block and set a LUKS partition.
 # Helps you mount and unmount LUKS partitions.
-# Author: John (troon) Ombagi
+# Author: John (troon) Ombagi 
+# Twitter: @johntroony | Email: jayombagi <at> gmail <dot> com
 
 
 ################################################################################
@@ -48,7 +49,7 @@ clear
 
 ##### FUNCTIONS 
 
-#############################################################################  3
+############################################################################## 1
 ## Function that tries to clean up LUKS setup that didn't mount (failed)
 function Clean(){
 Close_luks=$(dmsetup ls | cut -d$'\t' -f 1 | xargs -I % cryptsetup luksClose %)
@@ -58,18 +59,18 @@ $lo_detach
 exit 1;
 }
 
-###########################################################################  1
+############################################################################## 2
 # Function to Setup a new virtual volume with LUKS
 function New_volume(){
 #Function Variables
 
 
 # Get Size of the disk to create . If not 512 MB is used
-read -p "Enter size (MB) of virtual disk to create [default 10]  " size
+read -p "Enter size (MB) of virtual disk to create [default 512]  " size
 while [[ -z "$size" ]]; do
-        size=10
+        size=512
 done
-echo -e $green"$size is set as your default virtual disk capcity.\n"$normal
+echo -e $green"$size MB is set as your default virtual disk capcity.\n"$normal
 
 # Get Disk Name from user. If not, a random one is used.
 read -p "Enter name of virtual disk to create (default LUKS_random.disk)  " name
@@ -97,13 +98,13 @@ if [[ $confirm_lo != $match ]]; then
 	exit 1;
 fi
 
-# Select a full cipher/mode/iv specification to use. Default is aes-cbc-essiv:sha256
+# Select a full cipher/mode/iv specification to use. Default is aes-xts-plain64
 echo -e $green"################################################"$normal
 echo -e $blue"Select a full cipher/mode/iv specification to use"$normal
 echo -e $yellow"1) aes-cbc-essiv:sha256 2) aes-xts-plain64 3) twofish-ecb 4) serpent-cbc-plain 5) Custom"$none
 read full_spec 
 while [[ -z "$full_spec" ]]; do
-	full_spec=1
+	full_spec=2
 done
 
 # Use the selected cipher to luksformat the created Loop-device
@@ -182,7 +183,7 @@ echo -e $yellow"You can delete $node after use.\n"$none
 exit 1;
 }
 
-############################################################################ 2
+############################################################################## 3
 #Function to mount an Existing LUKS volume
 
 function Mount_LUKSVolume(){
@@ -210,7 +211,7 @@ echo -e $yellow"\nYou can delete $node after use.\n"$none
 exit 1;
 }
 
-#############################################################################  4
+############################################################################## 4
 # Function to Unmount a luks volume
 
 function Unmount_LUKSVolume(){
@@ -242,13 +243,13 @@ loop_dev=$(losetup -a | grep $diskName | cut -d ":" -f 1)
 # Unmounting procedure
 umount $path
 cryptsetup luksClose $map_crypt    # Close mapper
-losetup -d $loop_dev 2>/tmp/lukass_detach.log 
+losetup -d $loop_dev 2>/tmp/luks_detach.log 
 echo -e $green"Volume unmounted..\n"$normal # Detach loop-device
 exit 1;
 
 }
 
-#############################################################################  5
+############################################################################## 5 
 ### Function to unmount all LUKS vol
 function unmount_all_LUKS(){
 
@@ -269,7 +270,7 @@ echo -e $red"All LUKS volume(s) Safely unmounted\n"$none
 exit 1;
 }
 
-#############################################################################  6
+############################################################################## 6
 ### Function for the options menu
 function Main_menu(){
 intro
@@ -294,7 +295,7 @@ do
 done
 }
 
-#############################################################################  7
+############################################################################## 7 
 ### Help Fuction 
 
 function usage(){
