@@ -3,7 +3,7 @@
 # Bash script for quickly managing LUKS volumes:
 # You can create a virtual volume from a file block and set a LUKS partition.
 # Helps you mount and unmount LUKS partitions.
-# Author: John (troon) Ombagi 
+# Author: John (Troon) Ombagi 
 # Twitter: @johntroony | Email: jayombagi <at> gmail <dot> com
 
 
@@ -16,7 +16,7 @@ loopdev=$(losetup -f)
 temp_name="$constant$logs"
 
 ####### Some Color variables for "secsyness"
-# colors for errors and statuses
+# colors for errors and statuses	
 red=$(tput setab 0; tput setaf 1)
 yellow=$(tput setab 0; tput setaf 3)
 none=$(tput sgr0)
@@ -53,7 +53,7 @@ clear
 ##### FUNCTIONS 
 
 ############################################################################## 1
-## Function that tries to clean up LUKS setup that did"t mount (failed)
+## Function that tries to clean up LUKS setup that didn't mount (failed)
 function Clean(){
 Close_luks=$(dmsetup ls | cut -d$"\t" -f 1 | xargs -I % cryptsetup luksClose %)
 lo_detach=$(losetup -a | grep loop | cut -d ":" -f 1 | xargs -I % losetup -d %)
@@ -66,7 +66,7 @@ exit 1;
 # Function to Setup a new virtual volume with LUKS
 function New_volume(){
 
-#Function"s Variables
+#Function's Variables
 Mapper="/dev/mapper/"$cryptdev 
 node="/media/"$temp_name 
 
@@ -75,7 +75,7 @@ read -p "Enter size (MB) of virtual disk to create [default 512]  " size
 while [[ -z  $size  ]]; do
         size=512
 done
-echo -e "$green $size MB is set as your default virtual disk capacity.\n $normal"
+echo -e "$green $size MB is set as your default virtual disk capacity. \n $normal"
 
 # Get Disk Name from user. If not, a random one is used.
 read -p "Enter name of virtual disk to create (default LUKS_randomString) " name
@@ -87,25 +87,25 @@ done
 name=$(echo  "$name"  | tr -dc a-zA-Z)
 
 # Obviously, keeping the user patient :)
-echo -e "$green $name is set as your default virtual disk name. (No special chars)\n $normal"
-echo -e "$yellow Keep calm.. Creating File block. This might take time depending on the File size and your machine!\n $none"
+echo -e "$green $blue $name $normal is set as your default virtual disk name. (No special chars). \n $normal"
+echo -e "$yellow Keep calm.. Creating File block. This might take time depending on the File size and your machine! \n $none"
 
 # Create a block-file (virtual-disk)
 base="/usr/$name"
 dd if=/dev/zero of="$base" bs=1M count="$size"
-echo -e  "$green \nDone creating the block file $name in /usr/ directory\n $normal"
+echo -e  "$green \nDone creating the block file $name in /usr/ directory. \n $normal"
 
 # Create a block device from the file.
 losetup "$loopdev" "/usr/$name" 2> "/tmp/$logs.log"
 
-# variables for testing losetup	
+# variables for testing losetup	(loop-device setup)
 confirm_lo=$(losetup -a | grep "$loopdev" | cut -d":" -f3 | grep \( | cut -d"(" -f2 | tr -dc a-zA-Z\/ | cut -d"/" -f3)
 match="$name"
 
 # Test if losetup is fine before we continue execution
 if [[ "$confirm_lo" != "$match" ]]; then
 	rm "/usr/$name"
-	echo -e "$red There was a problem setting up LUKS.. Try $0 new device-name device-size\n $none"
+	echo -e "$red There was a problem setting up LUKS.. Try $0 new device-name device-size. \n $none"
 	# For Debugs Only
 	#echo "confirm LoopBack is "$confirm_lo 
 	#echo "confirm Match is $match"
@@ -133,7 +133,7 @@ case $full_spec in
 	4) cryptsetup luksFormat -c twofish-ecb "$loopdev" 2> "/tmp/$logs.log"
 	;;
 	5) read -p "Specify full cipher/mode/iv to use:  " custom 
-	while [[ -z "$custom " ]]; do
+	while [[ -z "$custom" ]]; do
 		echo -e "$red \nNothing entered.. Using default cipher..\n $none"
 		cryptsetup luksFormat -c aes-xts-plain64 "$loopdev" 2> "/tmp/$logs.log"
 	done
@@ -160,7 +160,7 @@ if [[ "$confirm_crypt" != "$cryptdev" ]]; then
 	exit 1;
 fi
 
-# Show possible setups in the system (if empty then it"s an error! Should be at least one by now)
+# Show possible setups in the system (if empty then it's an error! Should be at least one by now)
 echo -e "$green \nList of dmsetup current on your system... $normal"
 dmsetup ls
 
@@ -193,14 +193,14 @@ case "$option" in
 	7) read -p "Specify filesystem to use:  " fileSys
 	   mkfs."$fileSys"  "/dev/mapper/$cryptdev"
 	;;
-	*) echo -e "$red No match found! Your option is magical?\n $none"
+	*) echo -e "$red No match found! Your option is magical? \n $none"
 	Clean
 	exit 1;
 	;;
 esac
 
 # Print Stats/Details
-echo -e "$yellow  Disk-Name:\t $name\n Path:\t\t /usr/$name\n Loop-Device:\t $loopdev\n Mapper:\t $Mapper\n Mount point:\t $node\n $none"
+echo -e "$yellow Disk-Name:\t $name\n Path:\t\t /usr/$name\n Loop-Device:\t $loopdev\n Mapper:\t $Mapper\n Mount point:\t $node\n $none"
 
 # mount volume
 mkdir "$node"
@@ -223,7 +223,7 @@ read -p "Enter Full Path to the LUKS Volume:  " volume
 while [[ -z "$volume" ]]; do
 	read -p "Please Enter Full Path to the LUKS Volume: " volume
 done
-echo -e "$blue $volume was selected.\n $normal"
+echo -e "$blue $volume was selected. \n $normal"
 
 # Get mount-point to use or make a temporary one to use
 read -p "Enter a mount point [default /media/random_name] " mount_point
@@ -239,7 +239,7 @@ cryptsetup luksOpen "$loopdev" "$cryptdev"
 # Mount volume with rw permission    
 mount  "/dev/mapper/$cryptdev" -rw  "$node"
 chown -HR "$SUDO_USER" "$node"
-echo -e "$yellow \nYou can delete $node after use.\n $none"
+echo -e "$yellow \nYou can delete $node after use. \n $none"
 
 exit 1;
 }
@@ -267,7 +267,7 @@ read -p "Enter the name of the virtual disk: " diskName
 while [[ -z  "$diskName"  ]]; do
 	read -p "Name of the virtual disk is needed to unmount! : " diskName
 done
-echo -e "$green $diskName is your Vitual disk/volume Name.\n $normal"
+echo -e "$green $diskName is your Virtual disk/volume Name. \n $normal"
 
 # Create variables that identify parameters needed by cryptsetup & losetup
 map_crypt=$(mount | grep "$path" | cut -d" " -f1 | cut -d"/" -f 4)
@@ -277,7 +277,7 @@ loop_dev=$(losetup -a | grep "$diskName" | cut -d ":" -f 1)
 umount "$path"
 cryptsetup luksClose "$map_crypt"    # Close mapper
 losetup -d "$loop_dev" 2>/tmp/luks_detach.log 
-echo -e "$green Volume unmounted..\n $normal" # Detach loop-device
+echo -e "$green Volume unmounted! $normal" # Detach loop-device
 
 exit 1;
 }
@@ -303,7 +303,7 @@ $lo_detach
 rm -r /media/luks_* 2> /dev/null
 
 # Make the user feel good :)
-echo -e "$red All LUKS volumes Safely unmounted\n $none"
+echo -e "$red All LUKS volumes Safely unmounted! \n $none"
 exit 1;
 }
 
@@ -311,7 +311,7 @@ exit 1;
 ### Function for the options menu
 function Main_menu(){
 intro
-echo -e "$green Select one of the option\n $normal"
+echo -e "$green Select one of the option \n $normal"
 select option in "New Volumes" "Mount an existing vol" "Unmount a vol" "Unmount all" "Clean after setup fail" "quit"
 do
 	case "$option" in
@@ -344,8 +344,7 @@ echo -e "$blue $0 new disk_Name Size_in_numbers $normal"
 echo -e "$blue $0 mount /path/to/device (mount point)  $normal"
 echo -e "$blue $0 unmount-all $normal"
 echo -e "$blue $0 clean $normal"
-echo -e "$blue $0 usage $normal"
-echo
+echo -e "$blue $0 usage $normal \n"
 exit 1;
 }
 #### End of FUNCTIONS
@@ -380,7 +379,7 @@ case "$1" in
 	name=$(echo "$2" | tr -dc a-zA-Z)
 	
 	#Create the LUKS virtual volume 	
-	echo -e "$yellow Keep calm.. Creating File block. This might take time depending on the File size and your machine!\n $none" 
+	echo -e "$yellow Keep calm.. Creating File block. This might take time depending on the File size and your machine! \n $none" 
 	dd if=/dev/zero of=/usr/"$name" bs=1M count="$3"
 	echo -e "$green \nBlock file created - /usr/$name \n $normal"
 	
@@ -396,8 +395,8 @@ case "$1" in
 		rm "/usr/$name"
 		echo -e "$red There was a problem setting up LUKS.. Try $0 new Name Size\n $none"
 		# For Debugs
-		#echo -e "$yellow confirm Loop-device is "$confirm_lo"\n Confirm-Match is "$name"\n $none"
-		#echo -e "$red If the Loop-device is not the same as Confirm-Match... ERROR $none"
+		#echo -e "$yellow Confirm Loop-device is $confirm_lo\n Confirm-Match is $name \n $none"
+		#echo -e "$green  If the Loop-device is not the same as Confirm-Match... $normal $red ERROR!! $none"
 		
 		Clean
 		exit 1;
@@ -420,17 +419,17 @@ case "$1" in
 		echo -e "$red There was a problem setting up LUKS.. Check if is /tmp/$logs.log has anything. $none"
 		echo -e "$yellow Password did notMatch or If you entered lower-case yes use YES next time.\n $none"
 		#For debugs
-		#echo -e "$yellow CryptDevice = "$cryptdev"\n Matching-cryptdev = $confirm_cryp $none"
-		#echo -e "$red If CryptDevice is not equal to Matching-cryptdev.. ERROR! $none"
+		#echo -e "$yellow CryptDevice = $cryptdev \n Matching-cryptdev = $confirm_cryp \n $none"
+		#echo -e "$red ERROR! $none $green If CryptDevice is not equal to Matching-cryptdev.. $normal"
 		exit 1;
 	fi
 	
 	# Create default File System (ext4)
-	echo -e "$yellow Creating filesystem...... $none"
+	echo -e "$yellow Creating File-System...... $none"
 	mkfs.ext4 -L "$name"  "/dev/mapper/$cryptdev"
-	echo
 	fi
-	echo -e "$green MOUNT : yes/no\n  $normal"
+
+	echo -e "$green \n MOUNT : yes/no \n  $normal"
 	
 	# Mount the volume if the user accepts	
 	read -p "LUKS Virtual disk created, mount it? yes/no :" mount_new
@@ -438,35 +437,47 @@ case "$1" in
 		mkdir  /media/"$temp_name"
 		mount  "/dev/mapper/$cryptdev" "/media/$temp_name"
 		chown -HR "$SUDO_USER" "/media/$temp_name"
-		echo -e "$green You can delete /media/$temp_name after use.\n $normal"
+		echo -e "$green You can delete /media/$temp_name after use. \n $normal"
 	else
 		echo -e "$red Closing... $none"
 	fi
 	
 	#print stats and exit
-	echo -e "$yellow  Disk-Name:\t $name\n Path:\t\t /usr/$name\n Loop-Device:\t $loopdev\n Mapper:\t /dev/mapper/$cryptdev\n $none"
+	_Path="/usr/$name"
+	_Mapper="/dev/mapper/$cryptdev"
+
+	echo -e "$yellow  Disk-Name: \t $name \n Path: \t\t $_Path \n Loop-Device: \t $loopdev \n Mapper: \t $_Mapper \n $none"
 	exit 1;
 	;;
-	mount) # Mounting a LUKS volume (args shouldn"t be less than 2; mount and mount-point).
+	mount) # Mounting a LUKS volume (args shouldn't be less than 2; mount and mount-point).
 	if [ $# -lt 2 ]; then
 		usage
 	fi
 	
 	if [ $# -eq 3 ]; then  # Check if custom mount-point is supplied by user.
 		mount_point="$3"
+		if [ ! -d "$3" ]; then
+   			echo -e $red"Mount-point entered not found!"$none
+    		exit 1
+  		fi
 	else
 		mkdir "/media/$temp_name"   # If no custom mount-point use default one.
         mount_point="/media/$temp_name" 
 	fi
 	
 	# Setup Loop-Device and open LUKS with random name
+	if [ ! -f "$2" ]; then
+   		echo -e $red"Disk to mount not found!"$none
+    	exit 1
+  	fi
+
 	losetup "$loopdev" "$2"
 	cryptsetup luksOpen "$loopdev" "$cryptdev"
 	
 	# Mount the volume and enable rw for other sudo user
     mount  "/dev/mapper/$cryptdev" -rw  "$mount_point" 2>/dev/null && echo -e "$yellow LUKS Virtual disk mounted $none"
 	chown -HR "$SUDO_USER" "$mount_point"
-	echo -e "$yellow  Mounted at:\t $mount_point\n Path to disk:\t\t $2\n Loop-Device:\t $loopdev\n Mapper:\t  /dev/mapper/$cryptdev\n $none"
+	echo -e "$yellow Mounted at:\t $mount_point\n Disk-Path:\t $2\n Loop-Device:\t $loopdev\n Mapper:\t  /dev/mapper/$cryptdev\n $none"
 	echo -e "$yellow NB: You can delete $mount_point after use. $none"
 	exit 1;	
 	;;
@@ -498,7 +509,7 @@ case "$1" in
 	help) # (usage func) Print help message and exit
 	usage
 	;;
-	*) echo -e "$red Oooops! I did notget what you did there..  $none" # (usage func) Print help message and exit
+	*) echo -e "$red Oooops! I did not get what you did there..  $none" # (usage func) Print help message and exit
 	usage
 	;;
 esac
