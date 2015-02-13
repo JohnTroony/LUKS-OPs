@@ -237,6 +237,167 @@ echo -e "$yellow Log File : $LOGFILE $none"
 exit 1;
 }
 
+
+############################################################################## 2
+# Function to Setup a new USB/Removable volume with LUKS
+
+function USB_volume(){
+
+#Function's Variables
+Mapper="/dev/mapper/$cryptdev"
+node="/media/$temp_name"
+
+
+# Get list of all available disks to create.
+echo -e "$green Probing for all the Disks available in the System: \n $normal"
+lshw -class disk | grep "logical name"
+
+echo -e "$red \n WARNING!: Please use the correct disk, using a wrong disk drive might destroy your data \n $normal"
+
+
+# Get Disk Name from user. If not, a random one is used.
+read -p "Enter USB/Removable Disk to Format (e.g. /dev/sdx) : " disk
+while [[ -z  $disk  ]]; do
+read -p "You must enter USB/Removable Disk to Format: " disk	
+done
+
+# Check if file already exists.
+if [ ! -e "$disk" ]; then
+   	echo -e "$red Disk selected is not available! ($disk) $none"
+   	echo -e "$yellow Please use another Disk $none"
+   	exit 1;
+fi
+
+echo -e "$red \n WARNING!: Make sure you've a backup of the data in the volume : $disk \n $normal"
+
+
+
+for n in "$disk""*" ; do umount $n ; done
+
+
+
+
+# Prepare the Removable device 
+#base="/usr/$name"
+#dd if=/dev/zero of="$base" bs=1M count="$size" >> "$LOGFILE" 2>&1
+#echo -e  "$green \nDone creating the block file $name in /usr/ directory. \n $normal"
+
+(echo o; echo n; echo p; echo 1; echo ; echo; echo w) | fdisk $disk
+
+disk2="$disk""1"
+if [ -z $disk2 ]; then
+   	echo -e "$red I can't confirm if the Removable Storage device was partitioned $none"
+   	echo -e "$yellow Please confirm if $disk2 exist $none"
+   	exit 1;
+fi
+
+
+
+# Select a full cipher/mode/iv specification to use. Default is aes-xts-plain64
+echo -e "$green ################################################ $normal"
+echo -e "$blue Select a full cipher/mode/iv specification to use $normal"
+echo -e "$yellow 1) aes-cbc-essiv:sha256 2) aes-xts-plain64 3) twofish-ecb 4) serpent-cbc-plain 5) Custom $none"
+read full_spec 
+while [[ -z "$full_spec" ]]; do
+	full_spec=2
+done
+
+# Use the selected cipher to luksformat the created Loop-device
+case $full_spec in
+	1) cryptsetup --verify-passphrase luksFormat -c aes-cbc-essiv:sha256 "$disk2"
+	;;
+	2) cryptsetup --verify-passphrase luksFormat -c aes-xts-plain64 "$disk2"
+	;;
+	3) cryptsetup --verify-passphrase luksFormat -c serpent-cbc-plain "$disk2"
+	;;
+	4) cryptsetup --verify-passphrase luksFormat -c twofish-ecb "$disk2"
+	;;
+	5) read -p "Specify full cipher/mode/iv to use:  " custom 
+	while [[ -z "$custom" ]]; do
+		echo -e "$red \nNothing entered.. Using default cipher..\n $none"
+		cryptsetup --verify-passphrase luksFormat -c aes-xts-plain64 "$disk2"
+	done
+	cryptsetup --verify-passphrase luksFormat -c "$custom" "$disk2"
+	;;
+	*) echo -e "$red Bad option! I am getting a tattoo of your name! \n $none"
+	exit 1;
+	;;
+esac
+
+# Setup Loop-Device
+cryptsetup luksOpen "$disk2" "$cryptdev" >> "$LOGFILE" 2>&1
+
+# variable used below in testing luksopen status
+confirm_crypt=$(dmsetup ls | cut -d$'\t' -f 1 | grep "$cryptdev")
+
+# test if luksopen was successful before proceeding
+if [[ "$confirm_crypt" != "$cryptdev" ]]; then
+	echo -e "$red There was a problem setting up LUKS.. Check Log file $LOGFILE . $none"
+	echo -e "$yellow Password did not Match or If you entered lower-case yes use YES next time.\n $none"
+	rm "$base" >> "$LOGFILE" 2>&1
+	#For debugs only
+	#echo "CryptDevice = "$cryptdev 
+	#echo "Matching cryptdev = "$confirm_cryp 
+	exit 1;
+fi
+
+# Show possible setups in the system (if empty then it's an error! Should be at least one by now)
+echo -e "$green \nList of dmsetup current on your system... $normal"
+dmsetup ls
+
+# Section: Create a file system
+echo
+
+# File-System menu
+echo -e "$green Select File system to use e.g 2 :\n $normal"
+echo -e "$yellow 1. ext3   2. ext4   3. btrfs  4. bfs  $none"
+echo -e "$yellow 5. ntfs   6. vfat   7. Other $none"
+read option
+while [[ -z  "$option"  ]]; do
+	option=6
+done
+
+# Use option selected to make file-system (default is ext4, option 2)
+case "$option" in
+	1) mkfs.ext3 -L "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	2) mkfs.ext4 -L "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	3) mkfs.btrfs -L "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	4) mkfs.bfs -V "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	5) mkfs.ntfs -L "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	6) mkfs.vfat -n "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	7) read -p "Specify filesystem to use:  " fileSys
+	   mkfs."$fileSys"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
+	;;
+	*) echo -e "$red No match found! Your option is magical? \n $none"
+	Clean
+	exit 1;
+	;;
+esac
+
+ryptsetup luksDump $disk2
+
+# Print Stats/Details
+echo -e "$yellow Disk-Name:\t $disk\n Partition:\t $disk2\n	 Mapper:\t $Mapper\n Mount point:\t $node\n $none"
+
+# mount volume
+mkdir "$node" >> "$LOGFILE" 2>&1
+mount  "/dev/mapper/$cryptdev" "$node" >> "$LOGFILE" 2>&1
+chown -HR "$SUDO_USER" "$node" >> "$LOGFILE" 2>&1
+echo -e "$yellow You can delete $node after use. Logs at $LOGFILE \n $none"
+
+echo -e "$yellow Log File : $LOGFILE $none"
+exit 1;
+}
+
+
+
+
 ############################################################################## 3
 #Function to mount an Existing LUKS volume
 
@@ -389,20 +550,32 @@ exit 1;
 function Main_menu(){
 intro
 echo -e "$green Select one of the option \n $normal"
-select option in "New Volumes" "Mount an existing vol" "Unmount a vol" "Unmount all" "Clean after setup fail" "quit"
+
+a="Create a Virtual Volume"
+b="Encrypt a Removable Volume"
+c="Mount an Encrypted volume"
+d="Unmount a volume"
+e="Unmount all"
+f="Clean after setup fail" 
+g="quit"
+ 
+
+select option in  "$a" "$b" "$c" "$d" "$e" "$f" "$g" 
 do
-	case "$option" in
-		"New Volumes") New_volume
+	case "$option" in 
+		"$a") New_volume
 		;;
-		"Mount an existing vol") Mount_LUKSVolume
+        	"$b") USB_volume
+        	;;
+		"$c") Mount_LUKSVolume
 		;;
-		"Unmount a vol") Unmount_LUKSVolume
+		"$d") Unmount_LUKSVolume
 		;;
-		"Unmount all") unmount_all_LUKS
+		"$e") unmount_all_LUKS
 		;;
-		"Clean after setup fail") Clean
+		"$f") Clean
 		;;
-		"quit") exit 1;
+		"$g") exit 1;
 		;;
 		*) echo -e "$red  Option not found! What did you do there? $none";;
 	esac
