@@ -51,12 +51,57 @@ fi
 
 clear
 
-# Varible that requires super-user to be set
+# Variable that requires super-user to be set
 loopdev=$(losetup -f)
 ##### FUNCTIONS 
 
+############################### a
+function choose_disk(){
+# Get Disk Name from user. If not, a random one is used.
+read -p "Enter USB/Removable Disk to Format (e.g. /dev/sdx) : " disk
+while [[ -z  $disk  ]]; do
+read -p "You must enter USB/Removable Disk to Format: " disk	
+done
+}
+
+
+
+################################ c
+function confirm_disk(){
+#Confirm if the Disk is correctly SET
+read -p "Are you sure you want to use $disk ? YES/NO : " confirm
+while [[ -z  $confirm  ]]; do
+read -p "Please confirm with 'YES' or deny with 'NO': " confirm	
+done
+
+if [ $confirm == 'YES' ]; then
+echo -e "$red \n We are going to use $disk \n $normal"
+
+elif [ $confirm == 'NO' ]; then
+echo -e "$red \n Please select another DISK to use... \n $normal"
+choose_disk
+
+else
+confirm_disk
+
+fi
+
+}
+
+
+################################ b
+function check_disk(){
+# Check if file already exists.
+while [ ! -e "$disk" ]; do
+   	echo -e "$red Disk selected is not available! ($disk) $none"
+   	echo -e "$yellow Please use another Disk $none"
+   	choose_disk
+   	confirm_disk
+   	
+done
+}
 ############################################################################## 1
-## Function that tries to clean up LUKS setup that didn't mount (failed)
+## Function that tries to clean up LUKS setup that did not't mount (failed)
 function Clean(){
 Close_luks=$(dmsetup ls | cut -d$'\t' -f 1 | xargs -I % cryptsetup luksClose %)
 lo_detach=$(losetup -a | grep loop | cut -d':' -f 1 | xargs -I % losetup -d %)
@@ -104,7 +149,7 @@ if [ -f "/usr/$name" ]; then
    	echo -e "$yellow Please use another Disk Name or delete the existing file$none"
    	exit 1;
 else
-	# saintize input (Remove special chars from filename)
+	# sanitize input (Remove special chars from filename)
 	echo -e "$green $blue $name $normal is set as your default virtual disk name. (No special chars). \n $normal"
 fi
 
@@ -131,7 +176,7 @@ if [[ "$confirm_final" != "$match" ]]; then
 	rm "$base" >> "$LOGFILE" 2>&1
 	
 	# For Debugs Only
-	#echo "confirm LoopBack is $confirm_final"
+	#echo "confirm Loop Back is $confirm_final"
 	#echo "confirm Match is $match"
 	Clean
 	exit 1;
@@ -215,7 +260,7 @@ case "$option" in
 	;;
 	6) mkfs.vfat -n "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
 	;;
-	7) read -p "Specify filesystem to use:  " fileSys
+	7) read -p "Specify file system to use:  " fileSys
 	   mkfs."$fileSys"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
 	;;
 	*) echo -e "$red No match found! Your option is magical? \n $none"
@@ -238,7 +283,7 @@ exit 1;
 }
 
 
-############################################################################## 2
+############################################################################## 3
 # Function to Setup a new USB/Removable volume with LUKS
 
 function USB_volume(){
@@ -252,32 +297,23 @@ node="/media/$temp_name"
 echo -e "$green Probing for all the Disks available in the System: \n $normal"
 lshw -class disk | grep "logical name"
 
-echo -e "$red \n WARNING!: Please use the correct disk, using a wrong disk drive might destroy your data \n $normal"
+echo -e "$red \n WARNING!: Please CHOOSE the correct disk, using a wrong disk drive WILL destroy your data! \n $normal"
 
+# Call function to select Disk to use
+choose_disk
 
-# Get Disk Name from user. If not, a random one is used.
-read -p "Enter USB/Removable Disk to Format (e.g. /dev/sdx) : " disk
-while [[ -z  $disk  ]]; do
-read -p "You must enter USB/Removable Disk to Format: " disk	
-done
+# Call function to check if Disk Exist
+check_disk
 
-# Check if file already exists.
-if [ ! -e "$disk" ]; then
-   	echo -e "$red Disk selected is not available! ($disk) $none"
-   	echo -e "$yellow Please use another Disk $none"
-   	exit 1;
-fi
+# Call function to confirm the selectes Disk to use
+confirm_disk
+
 
 echo -e "$red \n WARNING!: Make sure you've a backup of the data in the volume : $disk \n $normal"
 
-
-
 for n in "$disk""*" ; do umount $n ; done
 
-
-
-
-# Prepare the Removable device 
+# TO-DO: Prepare the Removable device 
 #base="/usr/$name"
 #dd if=/dev/zero of="$base" bs=1M count="$size" >> "$LOGFILE" 2>&1
 #echo -e  "$green \nDone creating the block file $name in /usr/ directory. \n $normal"
@@ -371,7 +407,7 @@ case "$option" in
 	;;
 	6) mkfs.vfat -n "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
 	;;
-	7) read -p "Specify filesystem to use:  " fileSys
+	7) read -p "Specify file system to use:  " fileSys
 	   mkfs."$fileSys"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
 	;;
 	*) echo -e "$red No match found! Your option is magical? \n $none"
@@ -796,7 +832,7 @@ case "$1" in
 	help) # (usage func) Print help message and exit
 	usage
 	;;
-	*) echo -e "$red Oooops! I did not get what you did there..  $none" # (usage func) Print help message and exit
+	*) echo -e "$red Oops! I did not get what you did there..  $none" # (usage func) Print help message and exit
 	usage
 	;;
 esac
