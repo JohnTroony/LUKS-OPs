@@ -3,7 +3,7 @@
 # Bash script for quickly managing LUKS volumes:
 # You can create a virtual volume from a file block and set a LUKS partition.
 # Helps you mount and unmount LUKS partitions.
-# Author: John (Troon) Ombagi 
+# Author: John (Troon) Ombagi
 # Twitter: @johntroony | Email: jayombagi <at> gmail <dot> com
 
 
@@ -17,7 +17,7 @@ now=$(date +"-%b-%d-%y-%H%M%S")
 
 
 ####### Some Color variables for "secsyness"
-# colors for errors and statuses	
+# colors for errors and statuses
 red=$(tput setab 0; tput setaf 1)
 yellow=$(tput setab 0; tput setaf 3)
 none=$(tput sgr0)
