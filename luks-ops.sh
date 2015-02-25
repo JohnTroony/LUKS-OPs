@@ -3,7 +3,11 @@
 # Bash script for quickly managing LUKS volumes:
 # You can create a virtual volume from a file block and set a LUKS partition.
 # Helps you mount and unmount LUKS partitions.
+<<<<<<< HEAD
 # Author: John (Troon) Ombagi
+=======
+# Author: John (Troon) Ombagi 
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 # Twitter: @johntroony | Email: jayombagi <at> gmail <dot> com
 
 
@@ -12,12 +16,16 @@
 constant="luks_"
 cryptdev=$(cat < /dev/urandom | tr -dc "[:lower:]"  | head -c 8)
 logs=$(cat < /dev/urandom | tr -dc "[:lower:]"  | head -c 4)
+<<<<<<< HEAD
+=======
+loopdev=$(losetup -f)
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 temp_name="$constant$logs"
 now=$(date +"-%b-%d-%y-%H%M%S")
 
 
 ####### Some Color variables for "secsyness"
-# colors for errors and statuses
+# colors for errors and statuses	
 red=$(tput setab 0; tput setaf 1)
 yellow=$(tput setab 0; tput setaf 3)
 none=$(tput sgr0)
@@ -45,7 +53,11 @@ type -P cryptsetup &>/dev/null || { echo -e "$red cryptsetup is not installed. D
 
 # Confirm if user has root privileges
 if [ $UID -ne 0 ]; then
+<<<<<<< HEAD
 	echo -e "$red User not root! Please run as root. $none"
+=======
+	echo -e "$red User not root! Please run as root. $none" >> "$LOGFILE" 2>&1
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 	exit 1;
 fi
 
@@ -101,7 +113,11 @@ while [ ! -e "$disk" ]; do
 done
 }
 ############################################################################## 1
+<<<<<<< HEAD
 ## Function that tries to clean up LUKS setup that did not't mount (failed)
+=======
+## Function that tries to clean up LUKS setup that didn't mount (failed)
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 function Clean(){
 Close_luks=$(dmsetup ls | cut -d$'\t' -f 1 | xargs -I % cryptsetup luksClose %)
 lo_detach=$(losetup -a | grep loop | cut -d':' -f 1 | xargs -I % losetup -d %)
@@ -149,7 +165,11 @@ if [ -f "/usr/$name" ]; then
    	echo -e "$yellow Please use another Disk Name or delete the existing file$none"
    	exit 1;
 else
+<<<<<<< HEAD
 	# sanitize input (Remove special chars from filename)
+=======
+	# saintize input (Remove special chars from filename)
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 	echo -e "$green $blue $name $normal is set as your default virtual disk name. (No special chars). \n $normal"
 fi
 
@@ -176,7 +196,11 @@ if [[ "$confirm_final" != "$match" ]]; then
 	rm "$base" >> "$LOGFILE" 2>&1
 	
 	# For Debugs Only
+<<<<<<< HEAD
 	#echo "confirm Loop Back is $confirm_final"
+=======
+	#echo "confirm LoopBack is $confirm_final"
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 	#echo "confirm Match is $match"
 	Clean
 	exit 1;
@@ -260,7 +284,11 @@ case "$option" in
 	;;
 	6) mkfs.vfat -n "$name"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
 	;;
+<<<<<<< HEAD
 	7) read -p "Specify file system to use:  " fileSys
+=======
+	7) read -p "Specify filesystem to use:  " fileSys
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 	   mkfs."$fileSys"  "/dev/mapper/$cryptdev" >> "$LOGFILE" 2>&1
 	;;
 	*) echo -e "$red No match found! Your option is magical? \n $none"
@@ -586,6 +614,7 @@ exit 1;
 function Main_menu(){
 intro
 echo -e "$green Select one of the option \n $normal"
+<<<<<<< HEAD
 
 a="Create a Virtual Volume"
 b="Encrypt a Removable Volume"
@@ -600,6 +629,12 @@ select option in  "$a" "$b" "$c" "$d" "$e" "$f" "$g"
 do
 	case "$option" in 
 		"$a") New_volume
+=======
+select option in "New Volumes" "Mount an existing vol" "Unmount a vol" "Unmount all" "Clean after setup fail" "quit"
+do
+	case "$option" in
+		"New Volumes") New_volume
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 		;;
         	"$b") USB_volume
         	;;
@@ -832,7 +867,11 @@ case "$1" in
 	help) # (usage func) Print help message and exit
 	usage
 	;;
+<<<<<<< HEAD
 	*) echo -e "$red Oops! I did not get what you did there..  $none" # (usage func) Print help message and exit
+=======
+	*) echo -e "$red Oooops! I did not get what you did there..  $none" # (usage func) Print help message and exit
+>>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 	usage
 	;;
 esac
