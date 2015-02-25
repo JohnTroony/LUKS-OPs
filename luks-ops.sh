@@ -78,7 +78,7 @@ done
 
 
 
-################################ c
+################################ b
 function confirm_disk(){
 #Confirm if the Disk is correctly SET
 read -p "Are you sure you want to use $disk ? YES/NO : " confirm
@@ -101,7 +101,7 @@ fi
 }
 
 
-################################ b
+################################ c
 function check_disk(){
 # Check if file already exists.
 while [ ! -e "$disk" ]; do
@@ -109,7 +109,7 @@ while [ ! -e "$disk" ]; do
    	echo -e "$yellow Please use another Disk $none"
    	choose_disk
    	confirm_disk
-   	
+
 done
 }
 ############################################################################## 1
@@ -149,7 +149,7 @@ else
 size=$(echo  "$size"  | tr -dc 0-9)
 echo -e "$green $blue $size MB $normal is set as your default virtual disk capacity. (Numbers Only) \n $normal"
 fi
-	
+
 # Get Disk Name from user. If not, a random one is used.
 read -p "Enter name of virtual disk to create (default LUKS_randomString) " name
 while [[ -z  $name  ]]; do
@@ -462,7 +462,7 @@ exit 1;
 
 
 
-############################################################################## 3
+############################################################################## 4
 #Function to mount an Existing LUKS volume
 
 function Mount_LUKSVolume(){
@@ -522,7 +522,7 @@ echo -e "$yellow Log File : $LOGFILE $none"
 exit 1;
 }
 
-############################################################################## 4
+############################################################################## 5
 # Function to Unmount a luks volume
 
 function Unmount_LUKSVolume(){
@@ -583,7 +583,7 @@ echo -e "$yellow Log File : $LOGFILE $none"
 exit 1;
 }
 
-############################################################################## 5 
+############################################################################## 6
 ### Function to unmount all LUKS vol
 function unmount_all_LUKS(){
 
@@ -609,7 +609,7 @@ echo -e "$yellow Log File : $LOGFILE $none"
 exit 1;
 }
 
-############################################################################## 6
+############################################################################## 7
 ### Function for the options menu
 function Main_menu(){
 intro
@@ -653,7 +653,7 @@ do
 done
 }
 
-############################################################################## 7 
+############################################################################## 8 
 ### Help Function 
 
 function usage(){
@@ -686,7 +686,7 @@ case "$1" in
 	if [ $# != 3 ]; then
 		usage
 	fi
-	
+
 	# Print some basic default options
 	echo -e "$red Notice: $none"
 	echo -e "$yellow Default Cipher = aes-xts-plain64 $none"
@@ -870,7 +870,7 @@ case "$1" in
 <<<<<<< HEAD
 	*) echo -e "$red Oops! I did not get what you did there..  $none" # (usage func) Print help message and exit
 =======
-	*) echo -e "$red Oooops! I did not get what you did there..  $none" # (usage func) Print help message and exit
+	*) echo -e "$red Oops! I did not get what you did there..  $none" # (usage func) Print help message and exit
 >>>>>>> 5823cda9e1b132a01d7b3f420c3594c6cf8cd089
 	usage
 	;;
