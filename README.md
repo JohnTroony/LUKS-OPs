@@ -9,10 +9,15 @@ Like:
 * Creating a virtual disk volume with LUKS format.
 * Mounting an existing LUKS volume
 * Unmounting a Single LUKS volume or all LUKS volume in the system.
+* Creating a LUKS encrypted filesystem on removable disks (like USBs)
 
 #####What Luks-Ops is not?
 * A replacement for LUKS or Cryptsetup.
 
+#####Why I started writing this script?
+* To encrypt my files on Dropbox 
+* To encrypt some files on my VPS
+* To have fun.. 
 
 
 ### Basic Usage 
@@ -59,12 +64,12 @@ Other options include:
 * man dmsetup
 
 #### TODO
-1. Support for KEYs
-2. Remote VPS setup (booting option) 
+1. Support for multiple user keys 
+2. Remote unlocking LUKS encrypted LVM 
 3. ZSH completion 
 4. [ Include other user requests here ]
 
-###Docs..
+### Read..
 
 The LUKS website at http://code.google.com/p/cryptsetup/
 
@@ -73,7 +78,3 @@ The cryptsetup FAQ, contained in the distribution package and online at http://c
 The cryptsetup mailing list and list archive, see FAQ entry 1.6.
 
 The LUKS on-disk format specification available at http://code.google.com/p/cryptsetup/wiki/Specification
-
-#### Edit the script to fit your use... Share!/Merge.. :blue_heart:
-
-
