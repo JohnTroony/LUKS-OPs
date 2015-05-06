@@ -1,6 +1,8 @@
 LUKS-OPs
 ========
 
+[![Join the chat at https://gitter.im/JohnTroony/LUKS-OPs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/JohnTroony/LUKS-OPs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 #####What is Luks-Ops? 
 A bash script to automate the most basic usage of LUKS and Cryptsetup in Linux.
 
