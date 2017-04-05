@@ -3,7 +3,7 @@ LUKS-OPs
 
 [![Join the chat at https://gitter.im/JohnTroony/LUKS-OPs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/JohnTroony/LUKS-OPs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-#####What is Luks-Ops? 
+### What is Luks-Ops? 
 A bash script to automate the most basic usage of LUKS and Cryptsetup in Linux.
 
 Like:
@@ -13,10 +13,10 @@ Like:
 * Unmounting a Single LUKS volume or all LUKS volume in the system.
 * Creating a LUKS encrypted filesystem on removable disks (like USBs)
 
-#####What Luks-Ops is not?
+### What Luks-Ops is not?
 * A replacement for LUKS or Cryptsetup.
 
-#####Why I started writing this script?
+### Why I started writing this script?
 * To encrypt my files on Dropbox 
 * To encrypt some files on my VPS
 * To have fun.. 
